@@ -200,6 +200,9 @@ body {
     font-weight: 700; 
     font-size: 16px; 
     line-height: 1.4;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;     /* IE 10 and IE 11 */
+    user-select: none;         /* Standard syntax to block text copying */
 }
 
 /* 8. Options UI */
@@ -214,6 +217,9 @@ body {
     background-color: transparent; 
     cursor: pointer; 
     transition: background 0.2s; 
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;     /* IE 10 and IE 11 */
+    user-select: none;         /* Standard syntax to block text copying */
 }
 
 .opt-row input[type="radio"] { 
