@@ -258,7 +258,8 @@ body {
     font-size: 22px; 
     color: #1a008f; 
     font-weight: 900; 
-    cursor: pointer; 
+    cursor: pointer;
+    text-transform: capitalize; 
 }
 
 /* 10. Result Screen */
