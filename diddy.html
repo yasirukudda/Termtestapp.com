@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="canonical" href="https://warriorsoftwares.github.io/termtestapp/diddy.html" /><!-- Standard viewport tag for all mobile browsers -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="canonical" href="https://github.io" /><!-- Standard viewport tag for all mobile browsers -->
     <title>Dhamma School Term Tests</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -90,15 +90,15 @@
         <div class="top-nav"><button class="btn-nav-icon" onclick="showScreen('dhamma-screen')">⬅️</button></div>
         <h1 class="q-header-title no-shadow-title">Select Term</h1>
         <div class="term-container">
-            <button class="btn-menu no-shadow-btn" onclick="startQuiz('1st Term')">1. First Term</button>
-            <button class="btn-menu no-shadow-btn" onclick="startQuiz('2nd Term')">2. Second Term</button>
-            <button class="btn-menu no-shadow-btn" onclick="startQuiz('3rd Term')">3. Third Term</button>
+            <button class="btn-menu no-shadow-btn" onclick="startGame('1st Term')">1. First Term</button>
+            <button class="btn-menu no-shadow-btn" onclick="startGame('2nd Term')">2. Second Term</button>
+            <button class="btn-menu no-shadow-btn" onclick="startGame('3rd Term')">3. Third Term</button>
         </div>
     </div>
 
     <!-- 3. QUIZ CONTAINER -->
     <div id="quiz-container" class="screen">
-        <div class="top-nav"><button class="btn-nav-icon" onclick="handleBack()">⬅️</button></div>
+        <div class="top-nav"><button class="btn-nav-icon" onclick="handleBackRequest()">⬅️</button></div>
         <h1 class="q-header-title" id="active-title" style="text-decoration: double underline #FF1493; text-underline-offset: 10px;">Dhamma Quiz</h1>
         <div class="stats-bar">
             <!-- Timer fixed to Royal Blue -->
@@ -116,7 +116,7 @@
             <label class="opt-row"><input type="radio" name="opt" id="o3"><span class="yasiru" id="t3"></span></label>
         </div>
         <p id="feedback" style="font-weight:900;"></p>
-        <button class="btn-submit" id="main-submit" onclick="checkAnswer()">Submit</button>
+        <button class="btn-submit" id="main-submit" onclick="check()">Submit</button>
     </div>
 
     <!-- 4. RESULT SCREEN -->
@@ -127,137 +127,7 @@
         <button class="btn-menu" onclick="window.location.href='index.html'">Main Menu</button>
     </div>
 
-    <script>
-        let selectedGrade = "";
-        let questions = [];
-        let currentIdx = 0;
-        let score = 0;
-        let timer;
-        let timeLeft = 10; 
-        let isAnswered = false;
-
-        // SYNC SETTINGS FROM INDEX.HTML
-        window.onload = () => {
-            const savedTime = localStorage.getItem('master_quiz_time');
-            if (savedTime) {
-                timeLeft = parseInt(savedTime);
-            }
-        };
-
-        function showScreen(id) {
-            const currentActive = document.querySelector('.screen.active');
-            const targetScreen = document.getElementById(id);
-            if (currentActive) {
-                currentActive.classList.remove('active');
-                setTimeout(() => {
-                    currentActive.style.display = 'none';
-                    targetScreen.style.display = 'flex';
-                    setTimeout(() => targetScreen.classList.add('active'), 50);
-                }, 400);
-            } else {
-                targetScreen.style.display = 'flex';
-                targetScreen.classList.add('active');
-            }
-        }
-
-        function selectGrade(grade) {
-            selectedGrade = grade;
-            showScreen('term-screen');
-        }
-
-        async function startQuiz(term) {
-            try {
-                const response = await fetch('edu.json');
-                const data = await response.json();
-                const qList = (data[selectedGrade] && data[selectedGrade][term]) ? data[selectedGrade][term] : [];
-                if (qList.length === 0) {
-                    alert("No questions found for " + selectedGrade + " " + term);
-                    return;
-                }
-                questions = qList.sort(() => Math.random() - 0.5);
-                currentIdx = 0; score = 0;
-                showScreen('quiz-container');
-                loadQuestion();
-            } catch (e) { alert("Error loading edu.json!"); }
-        }
-
-        function loadQuestion() {
-            isAnswered = false;
-            document.getElementById('main-submit').style.visibility = "visible";
-            document.getElementById('feedback').innerText = "";
-            const qData = questions[currentIdx];
-            document.getElementById('q-idx').innerText = currentIdx + 1;
-            document.getElementById('q-text').innerText = qData.q;
-            for(let i=0; i<4; i++) {
-                const r = document.getElementById(`o${i}`);
-                const t = document.getElementById(`t${i}`);
-                t.innerText = qData.options[i];
-                t.classList.remove('correct-text', 'wrong-text');
-                r.checked = false; r.disabled = false;
-            }
-            startTimer();
-        }
-
-        function startTimer() {
-            clearInterval(timer);
-            // Re-sync time limit at the start of every question
-            const savedTime = localStorage.getItem('master_quiz_time');
-            let questionTime = savedTime ? parseInt(savedTime) : 10;
-            
-            let tLeft = questionTime;
-            const box = document.getElementById('timer-box');
-            box.innerText = `Time: ${tLeft}s`;
-            
-            timer = setInterval(() => {
-                tLeft--;
-                box.innerText = `Time: ${tLeft}s`;
-                if(tLeft <= 0) {
-                    clearInterval(timer);
-                    highlightCorrect();
-                    moveToNext("Time's Up!", false);
-                }
-            }, 1000);
-        }
-
-        function checkAnswer() {
-            if(isAnswered) return;
-            let selected = -1;
-            for(let i=0; i<4; i++) { if(document.getElementById(`o${i}`).checked) selected = i; }
-            if(selected === -1) return;
-            clearInterval(timer);
-            const correctIdx = questions[currentIdx].correct;
-            if(selected === correctIdx) {
-                score++;
-                document.getElementById(`t${selected}`).classList.add('correct-text');
-                moveToNext("Correct! ✅", true);
-            } else {
-                document.getElementById(`t${selected}`).classList.add('wrong-text');
-                highlightCorrect();
-                moveToNext("Wrong! ❌", false);
-            }
-        }
-
-        function highlightCorrect() {
-            const correctIdx = questions[currentIdx].correct;
-            document.getElementById(`t${correctIdx}`).classList.add('correct-text');
-        }
-
-        function moveToNext(msg, isCorrect) {
-            isAnswered = true;
-            document.getElementById('main-submit').style.visibility = "hidden";
-            document.querySelectorAll('input[name="opt"]').forEach(r => r.disabled = true);
-            const f = document.getElementById('feedback');
-            f.innerText = msg;
-            f.style.color = isCorrect ? "green" : "red";
-            document.getElementById('live-score').innerText = Math.round((score / (currentIdx + 1)) * 100) + "%";
-            setTimeout(() => {
-                currentIdx++;
-                if(currentIdx < questions.length) loadQuestion();
-                else { showScreen('result-screen'); document.getElementById('final-score-val').innerText = Math.round((score / questions.length) * 100) + "%"; }
-            }, 2000);
-        }
-
-        function handleBack() { if(confirm("Exit Quiz?")) location.reload(); }
-    </script>
+    <!-- Linked directly to your primary script file -->
+    <script src="script.js"></script>
 </body>
 </html>
