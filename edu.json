@@ -1,42 +1,75 @@
 {
   "Grade 1": {
     "1st Term": [
-      { "q": "Sample Question for Grade 1 1st Term?", "options": ["Option A", "Option B", "Option C", "Option D"], "correct": 0 }
+      {
+        "q": "බුදුරජාණන් වහන්සේ උපත ලැබුවේ කුමන උද්‍යානයකද?",
+        "options": ["ලුම්බිණි සල් උයන", "ජේතවනාරාමය", "වේළුවනාරාමය", "කිඹුල්වත් පුරය"],
+        "correct": 0
+      }
     ],
     "2nd Term": [],
     "3rd Term": []
   },
   "Grade 2": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 3": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 4": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 5": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 6": {
     "1st Term": [
-      { "q": "බුදුරජාණන් වහන්සේ උපන්නේ කොහේද?", "options": ["ලුම්බිණිය", "බුද්ධගයාව", "කුසිනාරාව", "කිඹුල්වත්පුර"], "correct": 0 }
+      {
+        "q": "සිද්ධාර්ථ කුමාරයාගේ මෑණියන් වූයේ කවුද?",
+        "options": ["මහා ප්‍රජාපතී ගෝතමී දේවිය", "මහාමායා දේවිය", "යශෝධරා දේවිය", "විශාඛා උපාසිකාව"],
+        "correct": 1
+      }
     ],
-    "2nd Term": [], "3rd Term": []
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 7": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 8": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 9": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 10": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [],
+    "2nd Term": [],
+    "3rd Term": []
   },
   "Grade 11": {
-    "1st Term": [], "2nd Term": [], "3rd Term": []
+    "1st Term": [
+      {
+        "q": "ප්‍රථම ධර්ම සංගායනාව පැවැත්වුණේ කුමන ස්ථානයකද?",
+        "options": ["රජගහනුවර සප්තපණ්ණි ගුහාව", "විශාලා මහනුවර වාලුකාරාමය", "පැළලුප් නුවර අශෝකාරාමය", "මාතලේ අලු විහාරය"],
+        "correct": 0
+      }
+    ],
+    "2nd Term": [],
+    "3rd Term": []
   }
 }
