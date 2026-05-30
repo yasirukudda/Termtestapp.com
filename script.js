@@ -2,13 +2,16 @@ let masterData = {};
 let shuffled = [], current = 0, score = 0, isAnswered = false, timer;
 let timeLeft = 5, selectedGrade = "", selectedSubj = "", difficultyTime = 5, sessionLimit = 100;
 let selectedMode = ""; 
+let isQuizActive = false; 
 
 // 1. INITIALIZATION (Fixed for Samsung Internet compatibility)
 window.addEventListener('DOMContentLoaded', () => { 
     const urlParams = new URLSearchParams(window.location.search);
     const screenToLoad = urlParams.get('screen');
 
-    history.replaceState({ screen: 'login-screen' }, "", "");
+    const loginScreenExist = document.getElementById('login-screen');
+
+    history.replaceState({ screen: loginScreenExist ? 'login-screen' : 'dhamma-screen' }, "", "");
     setTimeout(() => { 
         const start = document.getElementById('start-screen');
         if(start) {
@@ -20,26 +23,48 @@ window.addEventListener('DOMContentLoaded', () => {
                 if(screenToLoad === 'mode-screen') {
                     showScreen('mode-screen', true);
                 } else {
-                    showScreen('login-screen', true); 
+                    if (loginScreenExist) {
+                        showScreen('login-screen', true); 
+                    } else {
+                        showScreen('dhamma-screen', true);
+                    }
                 }
             }, 375);
         }
     }, 1650); 
 });
 
+// Browser closing or reload protection handler
+window.addEventListener('beforeunload', (e) => {
+    if (isQuizActive) {
+        e.preventDefault();
+        e.returnValue = "Are you sure you want to exit the quiz? Your score progress will be lost.";
+        return e.returnValue;
+    }
+});
+
 // 2. NAVIGATION (Kept exactly as you had it)
 function showScreen(screenId, isBack = false) {
     const screens = document.querySelectorAll('.screen');
     const targetScreen = document.getElementById(screenId);
+    const currentActive = document.querySelector('.screen.active');
 
-    screens.forEach(s => {
-        s.style.display = "none";
-        s.classList.remove('active');
-    });
-
-    if(targetScreen) {
-        targetScreen.style.display = "flex";
-        targetScreen.classList.add('active');
+    if (currentActive && targetScreen && currentActive !== targetScreen) {
+        currentActive.classList.remove('active');
+        setTimeout(() => {
+            currentActive.style.display = 'none';
+            targetScreen.style.display = 'flex';
+            setTimeout(() => targetScreen.classList.add('active'), 50);
+        }, 400);
+    } else {
+        screens.forEach(s => {
+            s.style.display = "none";
+            s.classList.remove('active');
+        });
+        if(targetScreen) {
+            targetScreen.style.display = "flex";
+            targetScreen.classList.add('active');
+        }
     }
     if (!isBack) history.pushState({ screen: screenId }, "", "");
 }
@@ -51,7 +76,6 @@ async function handleLogin() {
     const feedback = document.getElementById("login-feedback");
 
     try {
-        // Added ?v= to prevent Samsung Internet from using an old cached file
         const response = await fetch('./users.json?v=' + Date.now()); 
         const data = await response.json();
         const account = data.accounts.find(acc => acc.user === u && acc.pass === p);
@@ -71,7 +95,15 @@ async function handleLogin() {
 // 4. QUIZ FLOW
 function goHome() { showScreen('menu-screen'); }
 function showGrades() { showScreen('grade-screen'); }
-function selectGrade(grade) { selectedGrade = grade; showScreen('subject-screen'); }
+function selectGrade(grade) { 
+    selectedGrade = grade; 
+    const termScreenExist = document.getElementById('term-screen');
+    if (document.getElementById('subject-screen')) {
+        showScreen('subject-screen'); 
+    } else if (termScreenExist) {
+        showScreen('term-screen');
+    }
+}
 function showTerms(subj) { selectedSubj = subj; showScreen('term-screen'); }
 
 function selectGameMode(mode) {
@@ -91,21 +123,27 @@ function toggleSettings(show) {
         overlay.style.display = 'none';
     }
 }
-
 async function startGame(term) {
     try {
-        // Added cache-busting here as well
-        const response = await fetch("master_data.json?v=" + Date.now());
+        const isDhamma = !document.getElementById('subject-screen');
+        // Removed the dynamic query parameter (?v=) to ensure stable server file matching
+        const dataFile = isDhamma ? "edu.json" : "master_data.json";
+        
+        const response = await fetch(dataFile);
         masterData = await response.json();
 
-        const subjectMap = {
-            "විද්‍යාව": "Science", "ඉතිහාසය": "History", "භූගෝල විද්‍යාව": "Geography",
-            "ගණිතය": "Mathematics", "I.C.T": "I.C.T.", "තොරතුරු තාක්ෂණය": "I.C.T.",
-            "සිංහල": "Sinhala", "බුද්ධ ධර්මය": "Buddhism"
-        };
-
-        const jsonKey = subjectMap[selectedSubj] || selectedSubj;
-        const questions = masterData[selectedGrade] && masterData[selectedGrade][term] ? masterData[selectedGrade][term][jsonKey] : [];
+        let questions = [];
+        if (isDhamma) {
+            questions = (masterData[selectedGrade] && masterData[selectedGrade][term]) ? masterData[selectedGrade][term] : [];
+        } else {
+            const subjectMap = {
+                "විද්‍යාව": "Science", "ඉතිහාසය": "History", "භූගෝල විද්‍යාව": "Geography",
+                "ගණිතය": "Mathematics", "I.C.T": "I.C.T.", "තොරතුරු තාක්ෂණය": "I.C.T.",
+                "සිංහල": "Sinhala", "බුද්ධ ධර්මය": "Buddhism"
+            };
+            const jsonKey = subjectMap[selectedSubj] || selectedSubj;
+            questions = masterData[selectedGrade] && masterData[selectedGrade][term] ? masterData[selectedGrade][term][jsonKey] : [];
+        }
 
         if (!questions || questions.length === 0) {
             alert("No questions found for this selection!");
@@ -114,10 +152,16 @@ async function startGame(term) {
 
         shuffled = [...questions].sort(() => Math.random() - 0.5).slice(0, sessionLimit);
         current = 0; score = 0;
-        document.getElementById('active-subj').innerText = selectedSubj;
+        isQuizActive = true;
+
+        const titleObj = document.getElementById('active-subj') || document.getElementById('active-title');
+        if (titleObj) titleObj.innerText = isDhamma ? "Dhamma Quiz" : selectedSubj;
+
         showScreen('quiz-container');
         loadQuestion();
-    } catch (e) { alert("Error loading master_data.json"); }
+    } catch (e) { 
+        alert("Error loading data file! Make sure master_data.json or edu.json exists in your directory."); 
+    }
 }
 
 // 5. CORE QUIZ (Rest of logic remains the same)
@@ -142,7 +186,10 @@ function loadQuestion() {
 
 function startTimer() {
     clearInterval(timer); 
+    const savedTime = localStorage.getItem('master_quiz_time');
+    difficultyTime = savedTime ? parseInt(savedTime) : difficultyTime;
     timeLeft = difficultyTime;
+    
     const box = document.getElementById('timer-box');
     box.innerText = `Time: ${timeLeft}s`;
 
@@ -197,14 +244,23 @@ function handleEnd(msg, isCorrect) {
         current++;
         if(current < shuffled.length) loadQuestion(); 
         else {
+            isQuizActive = false;
             showScreen('result-screen');
-            document.getElementById('final-score').innerText = Math.round((score / shuffled.length) * 100) + "%";
+            const scoreDisplay = document.getElementById('final-score') || document.getElementById('final-score-val');
+            if (scoreDisplay) scoreDisplay.innerText = Math.round((score / shuffled.length) * 100) + "%";
         }
     }, 1650);
 }
 
 function handleBackRequest() {
-    if(confirm("Exit Quiz?")) showScreen('subject-screen');
+    if(confirm("Exit Quiz?")) {
+        isQuizActive = false;
+        if (document.getElementById('subject-screen')) {
+            showScreen('subject-screen');
+        } else {
+            location.reload();
+        }
+    }
 }
 
 function generateJSON() {
